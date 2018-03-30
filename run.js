@@ -10,7 +10,7 @@
  */
 
 
-var parser = require('./name-parser.js');
+var parser = require('./name-parser1.js');
 
 // Read the name from the command line (for this script)
 var name = process.argv[2];
@@ -20,9 +20,7 @@ parsed.forEach(function(parse) {
     console.log("    " + parse.type + ": \t"
             + (parse.type != "name addition" && parse.type != "name expansion"
                && parse.type != "numeration" ? "\t" : "")
-            + (parse.punctuation == 'parens' ? "(" : "") 
-            + parse.value 
+            + (parse.punctuation == 'parens' ? "(" : "")
+            + parse.value
             + (parse.punctuation == "parens" ? ")" : ""));
 });
-
-

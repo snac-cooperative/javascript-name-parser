@@ -14,170 +14,151 @@
  * Attempts to parse names that are in RDA format into their SNAC-defined
  * components.
  */
-function parsePersonName(name) {
 
-    var parsed = Array();
+var NameParser = function(name) {
+    this.name =  name || '';
+    this.parts = this.splitName(name);
+    this.nameAdditions = [];
 
-    var split = name.split(",");
-
-    // split up components by comma
-    split.forEach(function(piece, i, all) {
-        var component = piece.trim();
-        var type = "unknown";
-        var pushed = false;
-
-        var match =component.match(/\d+|\d+\s*-|-\s*\d+|\d+\s*-\s*\d+/) ;
-        if (component.match(/\d+|\d+\s*-|-\s*\d+|\d+\s*-\s*\d+/)) {
-            type = "date";
-        }
-
-        // check for parens
-        if (component.match(/.*\(.*\).*/)) {
-            // split apart based on parens
-            var p1 = component.slice(0, component.indexOf('(')).trim();
-            var p2 = component.slice(component.indexOf('(')+1, component.indexOf(')')).trim();
-            var p3 = component.slice(component.indexOf(')')+1).trim();
-            
-            if (p1.length > 0) {
-                pushed = true;
-                parsed.push({
-                    type: type,
-                    value: p1,
-                    punctuation: null
-                });
+};
+NameParser.prototype.splitName = function(name) {
+    var result = name.split(/,|(\(.*?\))/).map( function(part) {
+            if (part) {
+                return part.trim();
             }
-            
-            if (p2.length > 0) {
-                pushed = true;
-                parsed.push({
-                    type: "parens",
-                    value: p2,
-                    punctuation: "parens"
-                });
-            }
-            
-            if (p3.length > 0) {
-                pushed = true;
-                parsed.push({
-                    type: type,
-                    value: p3,
-                    punctuation: null
-                });
-            }
-        }
-
-        // Check for Numeration
-        if (i == 0) {
-            match = component.match(/(.*) ([IVXCM]+ .*|[IVXCM]+$)/);
-            if (match && match.length == 3) {
-                pushed = true;
-                parsed.push({
-                    type: type,
-                    value: match[1],
-                    punctuation: null
-                });
-                parsed.push({
-                    type: "numeration",
-                    value: match[2],
-                    punctuation: null
-                });
-            }
-        }
-
-        // split again on spaces
-        var spaced = component.split(" ");
-
-        if (!pushed) {
-            parsed.push({
-                type: type,
-                value: component,
-                punctuation: null
-            });
-        }
     });
-    
-    parsed.forEach(function(piece, i, all) {
-        var next = null;
-        var prev = null;
-        if (i > 0)
-            prev = all[i-1];
-        if (i < all.length - 1)
-            next = all[i+1];
-        var lowered = piece.value.toLowerCase();
+    return result.filter(function(e) {return e;});
+};
 
-        // First guess is that this is a surname if it came first
-        if (i == 0 && piece.type == "unknown")
-            piece.type = 'surname';
-        
-        // If there is only one name part, it is defaulted to be a forename
-        if (all.length == 1) {
-            piece.type = "forename";
-            return;
+NameParser.prototype.parsePerson = function() {
+    this.parseDate();
+    this.parseNumeration();
+    // console.log(this);
+    var length = this.parts.length;
+    if (length == 1) {        // If there is only one name part, it defaults to forename
+        this.forename = this.parts[0];
+        return;
+    }
+
+    for (var i = 0; i < length; i++) {
+        var part = this.parts[i];
+        var lowered = part.toLowerCase();
+        // console.log("Part: ", part)
+        if (i === 0) {
+            this.surname = part;    // First part is assumed to be surname
+            // console.log("surname: ", part)
+            continue;
         }
-       
 
-        // If the previous part was a surname, then this will either be a
-        // name addition (if it had parens) or a forename
-        if (prev != null && prev.type == 'surname') {
-            if (piece.type == 'parens')
-                piece.type = 'name addition';
-            else if (piece.type == 'unknown')
-                piece.type = "forename";
-        } 
-        
+        if (i === 1) {
+            if (part.startsWith('(')) {
+                // console.log("nameadd1: ", part)
+                this.nameAdditions.push(part);
+            }
+            else if (lowered.includes("emperor") ||
+                    lowered.includes("empress") ||
+                    lowered.includes("king") ||
+                    lowered.includes("queen") ||
+                    lowered.includes("prince") ||
+                    lowered.includes("chief")) {
+
+                this.nameAdditions.push(part);
+            }
+            else {
+                // console.log("forename: ", part)
+                this.forename = part;
+            }
+            // If the previous part was a forename and this piece had parens, then
+            // it should be a name expansion
+                // TODO: Question: Are expansions always preceded by forenames?
+                // Improve this? check if parts of first letter on name expansion matches forename
+        } else if (this.parts[i - 1] === this.forename && part.startsWith('(')) {
+            this.nameExpansion = part;
+            // console.log("expans: ", part)
+        }
+        else {
+            this.nameAdditions.push(part); // Anything not known is officially a name addition
+            console.log("nameadd2: ", part)
+
+        }
+    }
+    // if there's a surname but no forename, switch them
+    if (this.forename === undefined && this.surname) {
+        this.forename = this.surname;
+        this.surname = undefined;
+    }
+    // console.log("End result", this)
+    return this;
+
+};
         // If the previous part was a forename and this piece had parens, then
         // it should be a name expansion
-        if (prev != null && prev.type == 'forename' && piece.type == 'parens')
-            piece.type = "name expansion";
 
-        // If this piece has a title of royalty (English names so far), then this should
-        // actually be a name addition
-        if (lowered.includes("emperor") ||
-                lowered.includes("empress") ||
-                lowered.includes("king") ||
-                lowered.includes("queen") ||
-                lowered.includes("prince") ||
-                lowered.includes("chief"))
-            piece.type = "name addition";
-
-        // Otherwise, if this piece had parens, then it should be a name addition
-        if (piece.type == 'parens')
-            piece.type = "name addition";
-
-        // Anything not known is officially a name addition
-        if (piece.type == 'unknown')
-            piece.type = "name addition";
-
-        // Since you can't have a surname without a forename, if this piece was not set
-        // to be a forename and the previous part was a surname, then update the previous
-        // to be a forename instead
-        if (prev != null && piece.type != 'forename' && prev.type == 'surname')
-            prev.type = 'forename';
-        
-    });
-
-    var result = Array();
-
-    parsed.forEach(function(piece, i, all) {
-        var next = null;
-        var prev = null;
-        if (i > 0)
-            prev = all[i-1];
-
-        if (i < all.length - 1)
-            next = all[i+1];
+        // else if (lowered.includes("emperor") ||
+        //         lowered.includes("empress") ||
+        //         lowered.includes("king") ||
+        //         lowered.includes("queen") ||
+        //         lowered.includes("prince") ||
+        //         lowered.includes("chief")) {
+        //
+        //     this.nameAdditions.push(part);
+        // }
 
 
-        if (prev != null && prev.type == piece.type) {
-            result[result.length - 1].value += ", " + piece.value;
-        } else {
-            result.push(piece);
+
+        //name expansion
+        //name addition
+
+        // arr = arr.filter(function(e) {return e})
+
+
+    // Since you can't have a surname without a forename, if this piece was not set
+    // to be a forename and the previous part was a surname, then update the previous
+    // to be a forename instead
+        // at end, if the thing after surname is not forname, then forename = surname, surname = undefined
+
+
+NameParser.prototype.parseDate = function() {
+    for (var i=0; i < this.parts.length; i++) {
+        // TODO: fails for Carleton (Family : Carleton, James, 1757-1827 )
+        // grab from first digit to last?
+        if (this.parts[i].match(/\d+|\d+\s*-|-\s*\d+|\d+\s*-\s*\d+/)) {
+            this.date = this.parts[i].match(/-?\d.*\d-?/)[0];
+            this.parts.splice(i, 1);
+            // TODO: do we want to remove the date from the part?
+            // if part is empty: delete part? would that mess with order? I don't think so
+            // if part is not empty: reassign part = sliced part w/o date
+            // console.log("Dated: ", this.parts);
         }
+    }
+};
 
-    });
+NameParser.prototype.parseNumeration = function() {
+    //get first and second
 
-    return result;
-}
+    var match = this.parts[0].match(/(.*) ([IVXCM]+ .*|[IVXCM]+$)/);
+    if (match && match.length == 3) {
+        this.numeration = match[2];
+        this.parts[0] = match[1];
+    }
 
-// NodeJS export command
-exports.parsePersonName = parsePersonName;
+    // find out if it's first or second part
+    // fix so it only runs once
+    // match = this.parts[1].match(/(.*) ([IVXCM]+ .*|[IVXCM]+$)/);
+    // if (match && match.length == 3) {
+    //     this.numeration = match[2];
+    //     this.parts[1] = match[1];
+    // }
+};
+
+//alternatives
+    // if it's one [], then split on spaces,
+    // then try first, last, ; last, first
+
+// Surname
+// Forename
+// NameAddition
+// Numeration
+// Date
+// NameExpansion
+module.exports = NameParser;

@@ -14,6 +14,10 @@ var NameParser = require('../name-parser.js');
 
 // If following a surname
 
+// Guesses
+//  if forname has split forename on space, and surname/forename, forename/surname it
+//
+
 
 describe("Name Parser", function() {
     it("is initialized with a name", function() {
@@ -46,6 +50,7 @@ describe("Name Parser", function() {
     });
 
     it("can extract two possible dates", function() {
+        // TODO: Name additions are repeated here. Fix
         var parser = new NameParser("John II Comnenus, Emperor of the East, 1087 or 1088-1143");
         parser.parseDate();
         expect(parser.date).toEqual("1087 or 1088-1143");
@@ -80,25 +85,44 @@ describe("Name Parser", function() {
         var neville = new NameParser("Neville, W. A. (William A.)");
         robert.parsePerson();
         neville.parsePerson();
-        expect(robert.nameExpansion).toEqual("(Robert Lewis)");
-        expect(neville.nameExpansion).toEqual("(William A.)");
+        expect(robert.nameExpansion).toEqual("Robert Lewis");
+        expect(neville.nameExpansion).toEqual("William A.");
     });
 
 
     // first, last
     // last, first
+    //
+    // it("Can parse Chief Black Foot", function() {
+    //     var parser = new NameParser("Black Foot, Chief, -1877 (Spirit)");
+    //     parser.parsePerson();
+    //     // console.log(parser)
+    //     expect(parser.forename).toEqual("Black Foot");
+    //     expect(parser.nameAdditions).toEqual(["Chief", "Spirit)"]);
+    //
+    //     expect(parser.date).toEqual("-1877");
+    //     // console.log(parser);
+    // });
 
-    it("Can parse Chief Black Foot", function() {
-        var parser = new NameParser("Black Foot, Chief, -1877 (Spirit)");
-        parser.parsePerson();
+    it("Doesn't delete date", function() {
+        var parser = new NameParser("Carleton (Family : Carleton, James, 1757-1827 )");
+        parser.parseDate();
         // console.log(parser)
-        expect(parser.forename).toEqual("Black Foot");
-        expect(parser.nameAdditions).toEqual(["Chief", "(Spirit)"]);
+        // expect(parser.forename).toEqual("Black Foot");
+        // expect(parser.nameAdditions).toEqual(["Chief", "Spirit)"]);
 
-        expect(parser.date).toEqual("-1877");
+        expect(parser.date).toEqual("1757-1827");
         // console.log(parser);
     });
-
-
-
 });
+
+
+// describe("Display Name", function() {
+//     it("can show a full name", function() {
+//         var parser = new NameParser("Shakespeare, William, 1564-1616");
+//         parser.parsePerson();
+//
+//         expect(parser.displayName()).toEqual("Shakespeare, William, 1564-1616");
+//         // console.log(parser);
+//     });
+// });

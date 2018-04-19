@@ -3,7 +3,7 @@
  *
  * Attempts to parse names.
  *
- * @author Robbie Hott
+ * @author Robbie Hott, Joseph Glass
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2017 the Rector and Visitors of the University of Virginia
  */
@@ -21,6 +21,7 @@ var NameParser = function(name) {
     this.nameAdditions = [];
 
 };
+
 NameParser.prototype.splitName = function(name) {
     var result = name.split(/,|(\(.*?\))/).map( function(part) {
             if (part) {
@@ -30,6 +31,46 @@ NameParser.prototype.splitName = function(name) {
     return result.filter(function(e) {return e;});
 };
 
+
+NameParser.prototype.guessPerson = function() {
+
+    var guesses = [];
+    guesses.push(this.parsePerson());
+
+    // make a guess, push guess object
+
+    if (!this.surname && this.forename.match(/ /)) {
+        var parts = this.forename.split(/ (.+)/);
+        this.surname = parts[0];
+        this.forename = parts[1];
+    }
+    guesses.push(this.parsePerson());
+
+
+    // if date, insert comma before first digit
+    // if multiple name additions, put them all in one
+    //
+    return guesses;
+};
+
+
+NameParser.prototype.displayPerson = function() {
+    var display = { "Surname" : this.surname,
+                    "Forename" : this.forename,
+                    "NameExpansion" : this.nameExpansion,
+                    "Numeration" : this.numeration,
+                    "NameAdditions" : this.nameAdditions,
+                    "Date" : this.date };
+
+    Object.keys(display).forEach(function(key) {
+        if ( !display[key] || display[key].length == 0) {
+            delete(display[key]);
+        }
+    });
+
+    return display;
+};
+
 NameParser.prototype.parsePerson = function() {
     this.parseDate();
     this.parseNumeration();
@@ -37,7 +78,7 @@ NameParser.prototype.parsePerson = function() {
     var length = this.parts.length;
     if (length == 1) {        // If there is only one name part, it defaults to forename
         this.forename = this.parts[0];
-        return;
+        return this.displayPerson();      // what if there just aren't any commas?
     }
 
     for (var i = 0; i < length; i++) {
@@ -61,7 +102,6 @@ NameParser.prototype.parsePerson = function() {
                     lowered.includes("queen") ||
                     lowered.includes("prince") ||
                     lowered.includes("chief")) {
-
                 this.nameAdditions.push(part);
             }
             else {
@@ -73,43 +113,25 @@ NameParser.prototype.parsePerson = function() {
                 // TODO: Question: Are expansions always preceded by forenames?
                 // Improve this? check if parts of first letter on name expansion matches forename
         } else if (this.parts[i - 1] === this.forename && part.startsWith('(')) {
-            this.nameExpansion = part;
+            // when to remove parens?
+            this.nameExpansion = part.replace(/\(|\)/g, '');
+
             // console.log("expans: ", part)
-        }
-        else {
+        } else {
             this.nameAdditions.push(part); // Anything not known is officially a name addition
-            console.log("nameadd2: ", part)
+            // console.log("nameadd2: ", part)
 
         }
     }
-    // if there's a surname but no forename, switch them
+    // if there's only one name, it should default to forename, not surname
     if (this.forename === undefined && this.surname) {
         this.forename = this.surname;
         this.surname = undefined;
     }
     // console.log("End result", this)
-    return this;
+    return this.displayPerson();
 
 };
-        // If the previous part was a forename and this piece had parens, then
-        // it should be a name expansion
-
-        // else if (lowered.includes("emperor") ||
-        //         lowered.includes("empress") ||
-        //         lowered.includes("king") ||
-        //         lowered.includes("queen") ||
-        //         lowered.includes("prince") ||
-        //         lowered.includes("chief")) {
-        //
-        //     this.nameAdditions.push(part);
-        // }
-
-
-
-        //name expansion
-        //name addition
-
-        // arr = arr.filter(function(e) {return e})
 
 
     // Since you can't have a surname without a forename, if this piece was not set
@@ -121,19 +143,25 @@ NameParser.prototype.parsePerson = function() {
 NameParser.prototype.parseDate = function() {
     for (var i=0; i < this.parts.length; i++) {
         // TODO: fails for Carleton (Family : Carleton, James, 1757-1827 )
-        // grab from first digit to last?
+        // grab from first digit to last
         if (this.parts[i].match(/\d+|\d+\s*-|-\s*\d+|\d+\s*-\s*\d+/)) {
-            this.date = this.parts[i].match(/-?\d.*\d-?/)[0];
-            this.parts.splice(i, 1);
-            // TODO: do we want to remove the date from the part?
-            // if part is empty: delete part? would that mess with order? I don't think so
-            // if part is not empty: reassign part = sliced part w/o date
+            // this.date = this.parts[i].match(/-?\d.*\d-?/)[0];
+            var match = this.parts[i].match(/-?\d.*\d-?/);
+            // this.date = this.parts[i].substring(match.index);
+            this.date = match[0];
+            this.parts[i] = this.parts[i].substring(0, match.index).trim();
+            if (this.parts[i] === '') {
+                this.parts.splice(i, 1);
+            }
+            // this.date = this.parts[i].match(/-?\d.*\d-?/)[0];
             // console.log("Dated: ", this.parts);
         }
     }
 };
 
 NameParser.prototype.parseNumeration = function() {
+    // Numeration is for
+    // Follows forename mostly?
     //get first and second
 
     var match = this.parts[0].match(/(.*) ([IVXCM]+ .*|[IVXCM]+$)/);
@@ -141,24 +169,11 @@ NameParser.prototype.parseNumeration = function() {
         this.numeration = match[2];
         this.parts[0] = match[1];
     }
-
-    // find out if it's first or second part
-    // fix so it only runs once
-    // match = this.parts[1].match(/(.*) ([IVXCM]+ .*|[IVXCM]+$)/);
-    // if (match && match.length == 3) {
-    //     this.numeration = match[2];
-    //     this.parts[1] = match[1];
-    // }
 };
 
 //alternatives
     // if it's one [], then split on spaces,
     // then try first, last, ; last, first
 
-// Surname
-// Forename
-// NameAddition
-// Numeration
-// Date
-// NameExpansion
+
 module.exports = NameParser;

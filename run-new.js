@@ -16,21 +16,37 @@ var NameParser = require('./name-parser.js');
 var name = process.argv[2];
 // var parsed = parser.parsePersonName(name);
 var parser = new NameParser(name);
-parser.parsePerson()
+parser.parsePerson();
 // NameParser
 // var newParser = new parser.NameParser(name);
 // newParser.parsePerson();
 //
 
-console.log(
-`
-Name: ${parser.surname || ''}, ${parser.forename || ''}
-numeration: ${parser.numeration || ''}
-name addition: ${parser.nameAdditions || ''}
-name expansion: ${parser.nameExpansion || ''}
-date: ${parser.date || ''}
-`
-)
+
+if (parser.surname)
+    console.log("Surname: ", parser.surname);
+if (parser.forename)
+    console.log("Forename: ", parser.forename);
+if (parser.numeration)
+    console.log("Numeration: ", parser.numeration);
+if (parser.nameAdditions.length > 0)
+    console.log("NameAdditions: ", parser.nameAdditions);
+if (parser.nameExpansion)
+    console.log("NameExpansion: ", parser.nameExpansion);
+if (parser.date)
+    console.log("Date: ", parser.date);
+
+//
+// console.log(
+// `
+// Surname: ${parser.surname || ''}
+// Forename: ${parser.forename || ''}
+// Numeration: ${parser.numeration || ''}
+// Name addition: ${parser.nameAdditions || ''}
+// Name expansion: ${parser.nameExpansion || ''}
+// date: ${parser.date || ''}
+// `
+// )
 // parser.forEach(function(parse) {
 //     console.log("    " + parse.type + ": \t"
 //             + (parse.type != "name addition" && parse.type != "name expansion"

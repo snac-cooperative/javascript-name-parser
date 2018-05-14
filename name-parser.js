@@ -15,6 +15,11 @@
  * components.
  */
 
+
+ // TODO: Guesses
+ // TODO: parenthesis removal.
+
+
 var NameParser = function(name) {
     this.name =  name || '';
     this.parts = this.splitName(name);
@@ -37,7 +42,7 @@ NameParser.prototype.guessPerson = function() {
     var guesses = [];
     guesses.push(this.parsePerson());
 
-    // make a guess, push guess object
+    // make a guess, push new display object
 
     if (!this.surname && this.forename.match(/ /)) {
         var parts = this.forename.split(/ (.+)/);
@@ -63,7 +68,7 @@ NameParser.prototype.displayPerson = function() {
                     "Date" : this.date };
 
     Object.keys(display).forEach(function(key) {
-        if ( !display[key] || display[key].length == 0) {
+        if ( !display[key] || display[key].length === 0) {
             delete(display[key]);
         }
     });
@@ -76,6 +81,8 @@ NameParser.prototype.parsePerson = function() {
     this.parseNumeration();
     // console.log(this);
     var length = this.parts.length;
+
+    //TODO: this should be redundant, but it isn't for one-part names.
     if (length == 1) {        // If there is only one name part, it defaults to forename
         this.forename = this.parts[0];
         return this.displayPerson();      // what if there just aren't any commas?
@@ -137,7 +144,8 @@ NameParser.prototype.parsePerson = function() {
     // Since you can't have a surname without a forename, if this piece was not set
     // to be a forename and the previous part was a surname, then update the previous
     // to be a forename instead
-        // at end, if the thing after surname is not forname, then forename = surname, surname = undefined
+
+    // at end, if the thing after surname is not forname, then forename = surname, surname = undefined
 
 
 NameParser.prototype.parseDate = function() {
@@ -159,8 +167,11 @@ NameParser.prototype.parseDate = function() {
     }
 };
 
+// Numeration is for titles, , For generational suffix, use nameAdditon
+// e.g.  Alexander I => Numeration: I,  Pope John Paul II => Numeration: II
+// e.g.  Alexander I => Numeration: I.
+
 NameParser.prototype.parseNumeration = function() {
-    // Numeration is for
     // Follows forename mostly?
     //get first and second
 
@@ -170,6 +181,25 @@ NameParser.prototype.parseNumeration = function() {
         this.parts[0] = match[1];
     }
 };
+
+
+function isEquivalent(a, b) {
+
+	var aProps = Object.getOwnPropertyNames(a);
+    var bProps = Object.getOwnPropertyNames(b);
+
+    if (aProps.length !== bProps.length) {
+        return false;
+    }
+
+    for (var i = 0; i < aProps.length; i++) {
+            var property = aProps[i];
+        if (a[property] != b[property]) {
+            return false;
+        }
+    }
+    return true;
+}
 
 //alternatives
     // if it's one [], then split on spaces,

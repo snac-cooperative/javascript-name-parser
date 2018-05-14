@@ -2,6 +2,7 @@ var NameParser = require('../name-parser.js');
 
 // Priority & Order of Ops
 
+
 // Parsing
 // Person
     // parens?
@@ -19,7 +20,7 @@ var NameParser = require('../name-parser.js');
 //
 
 
-describe("Name Parser", function() {
+describe("Name Parser Date", function() {
     it("is initialized with a name", function() {
         var parser = new NameParser("Shakespeare, William, 1564-1616");
         expect(parser.name).toEqual("Shakespeare, William, 1564-1616");
@@ -63,6 +64,10 @@ describe("Name Parser", function() {
         expect(parser.date).toEqual(undefined);
         // console.log(parser);
     });
+});
+
+
+describe("Name parser parsePerson", function() {
 
     it("can parse numeration", function() {
         var parser = new NameParser("Albrecht VII, Archduke of Austria, 1559-1621");
@@ -113,6 +118,11 @@ describe("Name Parser", function() {
 
         expect(parser.date).toEqual("1757-1827");
         // console.log(parser);
+    });
+
+    it("Can parse a name with just a forename", function() {
+        var parser = new NameParser("James 1444-1501")
+
     });
 });
 

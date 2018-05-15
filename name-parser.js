@@ -20,10 +20,16 @@
  // TODO: parenthesis removal.
 
 
-var NameParser = function(name) {
-    this.name =  name || '';
-    this.parts = this.splitName(name);
-    this.nameAdditions = [];
+var Name = require ('./name.js');
+
+// pass the name along as a param, push a guess into parts
+var NameParser = function() {
+    // new Name(name)
+    // this.name =  new Name(name).orginal || '';
+    // name.parts = this.splitName(name);
+    // name.parts = name.parts;
+    // name.nameAdditions = [];
+    this.guesses = []
 
 };
 
@@ -44,10 +50,10 @@ NameParser.prototype.guessPerson = function() {
 
     // make a guess, push new display object
 
-    if (!this.surname && this.forename.match(/ /)) {
-        var parts = this.forename.split(/ (.+)/);
-        this.surname = parts[0];
-        this.forename = parts[1];
+    if (!name.surname && name.forename.match(/ /)) {
+        var parts = name.forename.split(/ (.+)/);
+        name.surname = parts[0];
+        name.forename = parts[1];
     }
     guesses.push(this.parsePerson());
 
@@ -58,14 +64,14 @@ NameParser.prototype.guessPerson = function() {
     return guesses;
 };
 
-
-NameParser.prototype.displayPerson = function() {
-    var display = { "Surname" : this.surname,
-                    "Forename" : this.forename,
-                    "NameExpansion" : this.nameExpansion,
-                    "Numeration" : this.numeration,
-                    "NameAdditions" : this.nameAdditions,
-                    "Date" : this.date };
+// Move to name.js?
+NameParser.prototype.displayPerson = function(name) {
+    var display = { "Surname" : name.surname,
+                    "Forename" : name.forename,
+                    "NameExpansion" : name.nameExpansion,
+                    "Numeration" : name.numeration,
+                    "NameAdditions" : name.nameAdditions,
+                    "Date" : name.date };
 
     Object.keys(display).forEach(function(key) {
         if ( !display[key] || display[key].length === 0) {
@@ -76,24 +82,25 @@ NameParser.prototype.displayPerson = function() {
     return display;
 };
 
-NameParser.prototype.parsePerson = function() {
-    this.parseDate();
-    this.parseNumeration();
+NameParser.prototype.parsePerson = function(name) {
+    // console.log("THIS IS PARSA: ", name)
+    this.parseDate(name);
+    this.parseNumeration(name);
     // console.log(this);
-    var length = this.parts.length;
+    var length = name.parts.length;
 
     //TODO: this should be redundant, but it isn't for one-part names.
     if (length == 1) {        // If there is only one name part, it defaults to forename
-        this.forename = this.parts[0];
-        return this.displayPerson();      // what if there just aren't any commas?
+        name.forename = name.parts[0];
+        return this.displayPerson(name);      // what if there just aren't any commas?
     }
 
     for (var i = 0; i < length; i++) {
-        var part = this.parts[i];
+        var part = name.parts[i];
         var lowered = part.toLowerCase();
         // console.log("Part: ", part)
         if (i === 0) {
-            this.surname = part;    // First part is assumed to be surname
+            name.surname = part;    // First part is assumed to be surname
             // console.log("surname: ", part)
             continue;
         }
@@ -101,7 +108,7 @@ NameParser.prototype.parsePerson = function() {
         if (i === 1) {
             if (part.startsWith('(')) {
                 // console.log("nameadd1: ", part)
-                this.nameAdditions.push(part);
+                name.nameAdditions.push(part);
             }
             else if (lowered.includes("emperor") ||
                     lowered.includes("empress") ||
@@ -109,34 +116,34 @@ NameParser.prototype.parsePerson = function() {
                     lowered.includes("queen") ||
                     lowered.includes("prince") ||
                     lowered.includes("chief")) {
-                this.nameAdditions.push(part);
+                name.nameAdditions.push(part);
             }
             else {
                 // console.log("forename: ", part)
-                this.forename = part;
+                name.forename = part;
             }
             // If the previous part was a forename and this piece had parens, then
             // it should be a name expansion
                 // TODO: Question: Are expansions always preceded by forenames?
                 // Improve this? check if parts of first letter on name expansion matches forename
-        } else if (this.parts[i - 1] === this.forename && part.startsWith('(')) {
+        } else if (name.parts[i - 1] === name.forename && part.startsWith('(')) {
             // when to remove parens?
-            this.nameExpansion = part.replace(/\(|\)/g, '');
+            name.nameExpansion = part.replace(/\(|\)/g, '');
 
             // console.log("expans: ", part)
         } else {
-            this.nameAdditions.push(part); // Anything not known is officially a name addition
+            name.nameAdditions.push(part); // Anything not known is officially a name addition
             // console.log("nameadd2: ", part)
 
         }
     }
     // if there's only one name, it should default to forename, not surname
-    if (this.forename === undefined && this.surname) {
-        this.forename = this.surname;
-        this.surname = undefined;
+    if (name.forename === undefined && name.surname) {
+        name.forename = name.surname;
+        name.surname = undefined;
     }
     // console.log("End result", this)
-    return this.displayPerson();
+    return this.displayPerson(name);
 
 };
 
@@ -148,21 +155,21 @@ NameParser.prototype.parsePerson = function() {
     // at end, if the thing after surname is not forname, then forename = surname, surname = undefined
 
 
-NameParser.prototype.parseDate = function() {
-    for (var i=0; i < this.parts.length; i++) {
+NameParser.prototype.parseDate = function(name) {
+    for (var i=0; i < name.parts.length; i++) {
         // TODO: fails for Carleton (Family : Carleton, James, 1757-1827 )
         // grab from first digit to last
-        if (this.parts[i].match(/\d+|\d+\s*-|-\s*\d+|\d+\s*-\s*\d+/)) {
-            // this.date = this.parts[i].match(/-?\d.*\d-?/)[0];
-            var match = this.parts[i].match(/-?\d.*\d-?/);
-            // this.date = this.parts[i].substring(match.index);
-            this.date = match[0];
-            this.parts[i] = this.parts[i].substring(0, match.index).trim();
-            if (this.parts[i] === '') {
-                this.parts.splice(i, 1);
+        if (name.parts[i].match(/\d+|\d+\s*-|-\s*\d+|\d+\s*-\s*\d+/)) {
+            // name.date = name.parts[i].match(/-?\d.*\d-?/)[0];
+            var match = name.parts[i].match(/-?\d.*\d-?/);
+            // name.date = name.parts[i].substring(match.index);
+            name.date = match[0];
+            name.parts[i] = name.parts[i].substring(0, match.index).trim();
+            if (name.parts[i] === '') {
+                name.parts.splice(i, 1);
             }
-            // this.date = this.parts[i].match(/-?\d.*\d-?/)[0];
-            // console.log("Dated: ", this.parts);
+            // name.date = name.parts[i].match(/-?\d.*\d-?/)[0];
+            // console.log("Dated: ", name.parts);
         }
     }
 };
@@ -171,14 +178,14 @@ NameParser.prototype.parseDate = function() {
 // e.g.  Alexander I => Numeration: I,  Pope John Paul II => Numeration: II
 // e.g.  Alexander I => Numeration: I.
 
-NameParser.prototype.parseNumeration = function() {
+NameParser.prototype.parseNumeration = function(name) {
     // Follows forename mostly?
     //get first and second
 
-    var match = this.parts[0].match(/(.*) ([IVXCM]+ .*|[IVXCM]+$)/);
+    var match = name.parts[0].match(/(.*) ([IVXCM]+ .*|[IVXCM]+$)/);
     if (match && match.length == 3) {
-        this.numeration = match[2];
-        this.parts[0] = match[1];
+        name.numeration = match[2];
+        name.parts[0] = match[1];
     }
 };
 

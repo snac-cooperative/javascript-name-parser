@@ -11,29 +11,30 @@
 
 
 var NameParser = require('./name-parser.js');
+var Name = require('./name.js');
 
 // Read the name from the command line (for this script)
-var name = process.argv[2];
+var name = new Name(process.argv[2]);
 // var parsed = parser.parsePersonName(name);
-var parser = new NameParser(name);
-parser.parsePerson();
+var parser = new NameParser();
+parser.parsePerson(name);
 // NameParser
 // var newParser = new parser.NameParser(name);
 // newParser.parsePerson();
 //
 
 
-if (parser.surname)
-    console.log("Surname: ", parser.surname);
-if (parser.forename)
-    console.log("Forename: ", parser.forename);
-if (parser.numeration)
-    console.log("Numeration: ", parser.numeration);
-if (parser.nameAdditions.length > 0)
-    console.log("NameAdditions: ", parser.nameAdditions);
-if (parser.nameExpansion)
-    console.log("NameExpansion: ", parser.nameExpansion);
-if (parser.date)
+if (name.surname)
+    console.log("Surname: ", name.surname);
+if (name.forename)
+    console.log("Forename: ", name.forename);
+if (name.numeration)
+    console.log("Numeration: ", name.numeration);
+if (name.nameAdditions.length > 0)
+    console.log("NameAdditions: ", name.nameAdditions);
+if (name.nameExpansion)
+    console.log("NameExpansion: ", name.nameExpansion);
+if (name.date)
     console.log("Date: ", parser.date);
 
 //

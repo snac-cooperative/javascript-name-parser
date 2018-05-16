@@ -10,14 +10,16 @@
 var Name = function(original) {
     this.original = original || ''
     this.parts = this.splitName(original);
-    this.nameAdditions = [];
-    this.surname = undefined;
-    this.forename = undefined;
-    this.nameExpansion = undefined;
-    this.numeration = undefined;
+    this.parsed = { "NameAdditions" : [] }
+    this.guesses = [this.parsed]
+    // this.parsed = { "Surname" : null,
+    //                 "Forename" : null,
+    //                 "NameExpansion" : null,
+    //                 "Numeration" : null,
+    //                 "NameAdditions" : [],
+    //                 "Date" : null
+    //             }
 }
-
-
 
 Name.prototype.splitName = function(original) {
     var result = original.split(/,|(\(.*?\))/).map( function(part) {
@@ -27,6 +29,19 @@ Name.prototype.splitName = function(original) {
     });
     return result.filter(function(e) {return e;});
 };
+
+
+// Name.prototype.displayPerson = function() {
+//
+//     var parsed = this.parsed
+//     for (var key in parsed) {
+//         if ( !parsed[key] || parsed[key].length === 0) {
+//             delete(parsed[key]);
+//         }
+//     }
+//
+//     return this.parsed;
+// };
 
 
 module.exports = Name

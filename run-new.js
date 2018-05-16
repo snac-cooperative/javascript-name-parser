@@ -17,41 +17,44 @@ var Name = require('./name.js');
 var name = new Name(process.argv[2]);
 // var parsed = parser.parsePersonName(name);
 var parser = new NameParser();
-parser.parsePerson(name);
+// parser.parsePerson(name);
 // NameParser
 // var newParser = new parser.NameParser(name);
 // newParser.parsePerson();
 //
 
 
-if (name.surname)
-    console.log("Surname: ", name.surname);
-if (name.forename)
-    console.log("Forename: ", name.forename);
-if (name.numeration)
-    console.log("Numeration: ", name.numeration);
-if (name.nameAdditions.length > 0)
-    console.log("NameAdditions: ", name.nameAdditions);
-if (name.nameExpansion)
-    console.log("NameExpansion: ", name.nameExpansion);
-if (name.date)
-    console.log("Date: ", parser.date);
+// if (name.parsed["Surname"])
+//     console.log("Surname: ", name.parsed["Surname"]);
+// if (name.parsed["Forename"])
+//     console.log("Forename: ", name.parsed["Forename"]);
+// if (name.parsed["Numeration"])
+//     console.log("Numeration: ", name.parsed["Numeration"]);
+// if (name.parsed["NameAdditions"])
+//     console.log("NameAdditions: ", name.parsed["NameAdditions"]);
+// if (name.parsed["NameExpansion"])
+//     console.log("NameExpansion: ", name.parsed["NameExpansion"]);
+// if (name.parsed["Date"])
+//     console.log("Date: ", name.parsed["Date"]);
+
+// console.log(name.displayPerson())
+console.log(parser.guessPerson(process.argv[2]))
 
 //
 // console.log(
 // `
-// Surname: ${parser.surname || ''}
-// Forename: ${parser.forename || ''}
-// Numeration: ${parser.numeration || ''}
-// Name addition: ${parser.nameAdditions || ''}
-// Name expansion: ${parser.nameExpansion || ''}
+// Surname: ${parser.Surname || ''}
+// Forename: ${parser.Forename || ''}
+// Numeration: ${parser.Numeration || ''}
+// Name addition: ${parser.NameAdditions || ''}
+// Name expansion: ${parser.NameExpansion || ''}
 // date: ${parser.date || ''}
 // `
 // )
 // parser.forEach(function(parse) {
 //     console.log("    " + parse.type + ": \t"
 //             + (parse.type != "name addition" && parse.type != "name expansion"
-//                && parse.type != "numeration" ? "\t" : "")
+//                && parse.type != "Numeration" ? "\t" : "")
 //             + (parse.punctuation == 'parens' ? "(" : "")
 //             + parse.value
 //             + (parse.punctuation == "parens" ? ")" : ""));
@@ -61,7 +64,7 @@ if (name.date)
 //     console.log(
 //         `name: ${parsed.name}
 //         name addtion: ${parsed.nameAddition}
-//         numeration: ${parsed.numeration}
-//         name expansion: ${parsed.nameExpansion}
+//         Numeration: ${parsed.Numeration}
+//         name expansion: ${parsed.NameExpansion}
 //                 `);
 // });

@@ -1,3 +1,4 @@
+var Name = require('../name-parser')
 var NameParser = require('../name-parser.js');
 
 // Priority & Order of Ops
@@ -21,91 +22,71 @@ var NameParser = require('../name-parser.js');
 
 
 describe("Name", function() {
-    it("is keeps original name string", function() {
-        name = new Name("Shakespeare, William, 1564-1616")
-        var parser = new NameParser(name);
+    var parser = new NameParser;
+    it("keeps original name string", function() {
+        name = parser.parsePerson("Shakespeare, William, 1564-1616")
         expect(name.original).toEqual("Shakespeare, William, 1564-1616");
-        // console.log(parser);
     });
 
     it("can split on parens", function() {
-        name = new Name("Nelson, P. Mabel (Precious Mabel), 1887-")
-        // var parser = new NameParser(name);
-        expect(parser.parts[2]).toEqual("(Precious Mabel)");
-        // console.log(parser);
+        name = parser.parsePerson("Nelson, P. Mabel (Precious Mabel), 1887-")
+        expect(name.parts[2]).toEqual("(Precious Mabel)");
+        // console.log(name)
     });
 
     it("can extract a date", function() {
-        name = new Name("Shakespeare, William, 1564-1616")
-        var parser = new NameParser(name);
-        parser.parseDate();
-        expect(parser.date).toEqual("1564-1616");
-        // console.log(parser);
+        var name = parser.parsePerson("Shakespeare, William, 1564-1616")
+        expect(name.parsed["Date"]).toEqual("1564-1616");
     });
 
     it("can extract a partial", function() {
-        name = new Name("Shakespeare, William, 1564-")
-        var birth = new NameParser(name);
-        name = new Name("Shakespeare, William, -1616")
-        var death = new NameParser(name);
-        birth.parseDate();
-        death.parseDate();
-        expect(birth.date).toEqual("1564-");
-        expect(death.date).toEqual("-1616");
-        // console.log(parser);
+
+        var birth = parser.parsePerson("Shakespeare, William, 1564-")
+        var death = parser.parsePerson("Shakespeare, William, -1616")
+
+        expect(birth.parsed["Date"]).toEqual("1564-");
+        expect(death.parsed["Date"]).toEqual("-1616");
     });
 
     it("can extract two possible dates", function() {
-        // TODO: Name additions are repeated here. Fix
-        var parser = new NameParser(new Name("John II Comnenus, Emperor of the East, 1087 or 1088-1143"));
-        parser.parseDate();
-        expect(parser.date).toEqual("1087 or 1088-1143");
-        // console.log(parser);
+        name = parser.parsePerson("John II Comnenus, Emperor of the East, 1087 or 1088-1143");
+        expect(name.parsed["Date"]).toEqual("1087 or 1088-1143");
     });
 
     it("returns undefined if no date", function() {
-        var parser = new NameParser(new Name("Shakespeare, William"));
-        parser.parseDate();
-        expect(parser.date).toEqual(undefined);
-        // console.log(parser);
+        name = parser.parsePerson("Shakespeare, William");
+        expect(name.parsed["Date"]).toEqual(undefined);
     });
 });
 
 
 describe("Name parser parsePerson", function() {
+    parser = new NameParser()
 
     it("can parse numeration", function() {
-        var parser = new NameParser(new Name("Albrecht VII, Archduke of Austria, 1559-1621"));
-        parser.parseNumeration();
-        expect(parser.numeration).toEqual("VII");
-        // console.log(parser);
+        name = parser.parsePerson("Albrecht VII, Archduke of Austria, 1559-1621");
+        expect(name.parsed["Numeration"]).toEqual("VII");
     });
 
     it("can tell difference between initials and numeration", function() {
-        var james1 = new NameParser(new Name("Smith, James I. M., 1559-1621"));
-        var james2 = new NameParser(new Name("Smith, James V. X., 1559-1621"));
-        james1.parseNumeration();
-        james2.parseNumeration();
-        expect(james1.numeration).toBe(undefined);
-        expect(james2.numeration).toBe(undefined);
+        var james1 = parser.parsePerson("Smith, James I. M., 1559-1621");
+        var james2 = parser.parsePerson("Smith, James V. X., 1559-1621");
+        expect(james1.parsed["Numeration"]).toBe(undefined);
+        expect(james2.parsed["Numeration"]).toBe(undefined);
     });
 
     it("can identify name expansions", function() {
-        var robert = new NameParser(new Name("Smith, Robert L. (Robert Lewis), 1940-"));
-        var neville = new NameParser(new Name("Neville, W. A. (William A.)"));
-        robert.parsePerson();
-        neville.parsePerson();
+        var robert = parser.parsePerson("Smith, Robert L. (Robert Lewis), 1940-");
+        var neville = parser.parsePerson("Neville, W. A. (William A.)");
         expect(robert.nameExpansion).toEqual("Robert Lewis");
         expect(neville.nameExpansion).toEqual("William A.");
     });
 
     it("can identify remove parenthesis", function() {
-        // var robert = new NameParser(new Name("Smith, Robert L. (Robert Lewis), 1940-"));
-        // var neville = new NameParser(new Name("Neville, W. A. (William A.)"));
-        // robert.parsePerson();
-        // neville.parsePerson();
-        // expect(robert.nameExpansion).toEqual("Robert Lewis");
-        // expect(neville.nameExpansion).toEqual("William A.");
+        var robert = parser.parsePerson("Smith, Robert L. (Robert Lewis), 1940-");
+        var neville = parser.parsePerson("Neville, W. A. (William A.)");
+        expect(robert.nameExpansion).toEqual("Robert Lewis");
+        expect(neville.nameExpansion).toEqual("William A.");
     });
 
 
@@ -114,37 +95,30 @@ describe("Name parser parsePerson", function() {
     // last, first
     //
     // it("Can parse Chief Black Foot", function() {
-    //     var parser = new NameParser(new Name("Black Foot, Chief, -1877 (Spirit)"));
+    //     var parser = parser.parsePerson("Black Foot, Chief, -1877 (Spirit)");
     //     parser.parsePerson();
     //     // console.log(parser)
     //     expect(parser.forename).toEqual("Black Foot");
     //     expect(parser.nameAdditions).toEqual(["Chief", "Spirit)"]);
     //
-    //     expect(parser.date).toEqual("-1877");
-    //     // console.log(parser);
+    //     expect(parser.parsed["Date"]).toEqual("-1877");
     // });
 
     it("Doesn't delete date", function() {
-        var parser = new NameParser(new Name("Carleton (Family : Carleton, James, 1757-1827 )"));
-        parser.parseDate();
-        // console.log(parser)
-        // expect(parser.forename).toEqual("Black Foot");
-        // expect(parser.nameAdditions).toEqual(["Chief", "Spirit)"]);
-
-        expect(parser.date).toEqual("1757-1827");
-        // console.log(parser);
+        var name = parser.parsePerson("Carleton (Family : Carleton, James, 1757-1827 )");
+        expect(name.parsed["Date"]).toEqual("1757-1827");
     });
 
     it("Can parse a name with just a forename", function() {
-        var parser = new NameParser(new Name("James 1444-1501"))
-
+        var name = parser.parsePerson("James 1444-1501")
+        expect(name.parsed["Date"]).toEqual("1444-1501")
     });
 
-    it("can guess at ", function() {
-        "Smith James" // => Smith, James
-        "James Smith" // => James, Smith
-        // var robert = new NameParser(new Name("Smith, Robert L. (Robert Lewis), 1940-"));
-        // var neville = new NameParser(new Name("Neville, W. A. (William A.)"));
+    it("can guess forename and surename when not split by comma", function() {
+        var "Smith James" // => Smith, James
+
+        // var robert = parser.parsePerson("Smith, Robert L. (Robert Lewis), 1940-");
+        // var neville = parser.parsePerson("Neville, W. A. (William A.)");
         // robert.parsePerson();
         // neville.parsePerson();
         // expect(robert.nameExpansion).toEqual("Robert Lewis");
@@ -155,10 +129,9 @@ describe("Name parser parsePerson", function() {
 
 // describe("Display Name", function() {
 //     it("can show a full name", function() {
-//         var parser = new NameParser(new Name("Shakespeare, William, 1564-1616"));
+//         var parser = parser.parsePerson("Shakespeare, William, 1564-1616");
 //         parser.parsePerson();
 //
 //         expect(parser.displayName()).toEqual("Shakespeare, William, 1564-1616");
-//         // console.log(parser);
 //     });
 // });

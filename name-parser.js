@@ -16,16 +16,10 @@
  */
 
 
- // TODO: Guesses
- // TODO: parenthesis removal.
-
-
 var Name = require ('./name.js');
 
-// pass the name along as a param, push a guess into parts
 var NameParser = function() {
 };
-
 
 
 NameParser.prototype.guessPerson = function(name) {

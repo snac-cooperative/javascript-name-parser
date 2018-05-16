@@ -78,15 +78,15 @@ describe("Name parser parsePerson", function() {
     it("can identify name expansions", function() {
         var robert = parser.parsePerson("Smith, Robert L. (Robert Lewis), 1940-");
         var neville = parser.parsePerson("Neville, W. A. (William A.)");
-        expect(robert.nameExpansion).toEqual("Robert Lewis");
-        expect(neville.nameExpansion).toEqual("William A.");
+        expect(robert.parsed["NameExpansion"]).toEqual("Robert Lewis");
+        expect(neville.parsed["NameExpansion"]).toEqual("William A.");
     });
 
-    it("can identify remove parenthesis", function() {
+    it("can identify and remove parenthesis", function() {
         var robert = parser.parsePerson("Smith, Robert L. (Robert Lewis), 1940-");
         var neville = parser.parsePerson("Neville, W. A. (William A.)");
-        expect(robert.nameExpansion).toEqual("Robert Lewis");
-        expect(neville.nameExpansion).toEqual("William A.");
+        expect(robert.parsed["NameExpansion"]).toEqual("Robert Lewis");
+        expect(neville.parsed["NameExpansion"]).toEqual("William A.");
     });
 
 
@@ -115,23 +115,11 @@ describe("Name parser parsePerson", function() {
     });
 
     it("can guess forename and surename when not split by comma", function() {
-        var "Smith James" // => Smith, James
+        var guesses = parser.guessPerson("Smith James") // => Smith, James
+        expect(guesses[1]["Surname"]).toEqual("Smith")
+        expect(guesses[1]["Forename"]).toEqual("James")
+        expect(guesses[2]["Surname"]).toEqual("James")
+        expect(guesses[2]["Forename"]).toEqual("Smith")
 
-        // var robert = parser.parsePerson("Smith, Robert L. (Robert Lewis), 1940-");
-        // var neville = parser.parsePerson("Neville, W. A. (William A.)");
-        // robert.parsePerson();
-        // neville.parsePerson();
-        // expect(robert.nameExpansion).toEqual("Robert Lewis");
-        // expect(neville.nameExpansion).toEqual("William A.");
     });
 });
-
-
-// describe("Display Name", function() {
-//     it("can show a full name", function() {
-//         var parser = parser.parsePerson("Shakespeare, William, 1564-1616");
-//         parser.parsePerson();
-//
-//         expect(parser.displayName()).toEqual("Shakespeare, William, 1564-1616");
-//     });
-// });

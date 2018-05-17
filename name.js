@@ -10,15 +10,14 @@
 var Name = function(original) {
     this.original = original || ''
     this.parts = this.splitName(original);
-    this.parsed = { "NameAdditions" : [] }
+    this.parsed = { "Surname" : null,
+                "Forename" : null,
+                "NameExpansion" : null,
+                "Numeration" : null,
+                "NameAdditions" : [],
+                "Date" : null
+            }
     this.guesses = [this.parsed]
-    // this.parsed = { "Surname" : null,
-    //                 "Forename" : null,
-    //                 "NameExpansion" : null,
-    //                 "Numeration" : null,
-    //                 "NameAdditions" : [],
-    //                 "Date" : null
-    //             }
 }
 
 Name.prototype.splitName = function(original) {

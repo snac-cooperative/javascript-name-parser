@@ -21,7 +21,14 @@ var Name = require ('./name.js');
 var NameParser = function() {
 };
 
-
+/**
+ * Guess Person
+ *
+ * Takes a person name string and parses it into several possible arrangements
+ *
+ * @param string name The person name
+ * @return object[] Array of Javascript Name Parser Name objects
+ */
 NameParser.prototype.guessPerson = function(name) {
     name = this.parsePerson(name)
     var firstParse = name.parsed
@@ -56,7 +63,14 @@ NameParser.prototype.guessPerson = function(name) {
 };
 
 
-// Takes a string of a person name,
+/**
+ * Parse Person
+ *
+ * Parses a person name string into name components.
+ *
+ * @param string name The person name
+ * @return Name Javascript parser name object
+ */
 NameParser.prototype.parsePerson = function(name) {
     name = new Name(name)
     this.parseDate(name);
@@ -118,9 +132,18 @@ NameParser.prototype.parsePerson = function(name) {
 
 };
 
+/**
+ * Parse Date
+ *
+ * Parses a date out of a Name object
+ *
+ * @param  Name  name
+ * @return string Date string
+ */
 NameParser.prototype.parseDate = function(name) {
     for (var i=0; i < name.parts.length; i++) {
         // TODO: fails for Carleton (Family : Carleton, James, 1757-1827 )
+        // TODO: Build smarter date-parsing? 'active 1679-1708' => 1679-1708, 'died 1455'/ 'd. 1455' => -1445
         // grab from first digit to last
         if (name.parts[i].match(/\d+|\d+\s*-|-\s*\d+|\d+\s*-\s*\d+/)) {
             // name.parsed["Date"] = name.parts[i].match(/-?\d.*\d-?/)[0];
@@ -142,6 +165,14 @@ NameParser.prototype.parseDate = function(name) {
 // e.g.  Alexander I => Numeration: I,  Pope John Paul II => Numeration: II
 // e.g.  Alexander I => Numeration: I.
 
+/**
+ * Parse Numeration
+ *
+ * Parses a numeration out of a Name object
+ *
+ * @param  Name  name object
+ * @return string Numeration string
+ */
 NameParser.prototype.parseNumeration = function(name) {
     // Follows forename mostly?
     //get first and second

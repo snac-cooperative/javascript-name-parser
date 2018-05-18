@@ -10,17 +10,27 @@
  */
 
 
-var parser = require('./name-parser1.js');
+var NameParser = require('./app/name-parser.js');
+var Name = require('./app/name.js');
 
 // Read the name from the command line (for this script)
-var name = process.argv[2];
-var parsed = parser.parsePersonName(name);
+var name = process.argv[2]
+var parser = new NameParser();
 
-parsed.forEach(function(parse) {
-    console.log("    " + parse.type + ": \t"
-            + (parse.type != "name addition" && parse.type != "name expansion"
-               && parse.type != "numeration" ? "\t" : "")
-            + (parse.punctuation == 'parens' ? "(" : "")
-            + parse.value
-            + (parse.punctuation == "parens" ? ")" : ""));
-});
+// Print first guess only, exclude nulls
+parsedName = parser.parsePerson(name)
+if (parsedName.parsed["Surname"])
+    console.log("Surname: ", parsedName.parsed["Surname"]);
+if (parsedName.parsed["Forename"])
+    console.log("Forename: ", parsedName.parsed["Forename"]);
+if (parsedName.parsed["Numeration"])
+    console.log("Numeration: ", parsedName.parsed["Numeration"]);
+if (parsedName.parsed["NameAdditions"])
+    console.log("NameAdditions: ", parsedName.parsed["NameAdditions"]);
+if (parsedName.parsed["NameExpansion"])
+    console.log("NameExpansion: ", parsedName.parsed["NameExpansion"]);
+if (parsedName.parsed["Date"])
+    console.log("Date: ", parsedName.parsed["Date"]);
+
+// Uncomment to print guesses
+// console.log("\nGuesses: ", parser.guessPerson(name))

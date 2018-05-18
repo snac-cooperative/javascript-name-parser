@@ -1,5 +1,4 @@
-var Name = require('../name-parser')
-var NameParser = require('../name-parser.js');
+var NameParser = require('../app/name-parser.js');
 
 // Priority & Order of Ops
 
@@ -53,9 +52,9 @@ describe("Name", function() {
         expect(name.parsed["Date"]).toEqual("1087 or 1088-1143");
     });
 
-    it("returns undefined if no date", function() {
+    it("returns null if no date", function() {
         name = parser.parsePerson("Shakespeare, William");
-        expect(name.parsed["Date"]).toEqual(undefined);
+        expect(name.parsed["Date"]).toEqual(null);
     });
 });
 
@@ -71,8 +70,8 @@ describe("Name parser parsePerson", function() {
     it("can tell difference between initials and numeration", function() {
         var james1 = parser.parsePerson("Smith, James I. M., 1559-1621");
         var james2 = parser.parsePerson("Smith, James V. X., 1559-1621");
-        expect(james1.parsed["Numeration"]).toBe(undefined);
-        expect(james2.parsed["Numeration"]).toBe(undefined);
+        expect(james1.parsed["Numeration"]).toBe(null);
+        expect(james2.parsed["Numeration"]).toBe(null);
     });
 
     it("can identify name expansions", function() {
@@ -88,13 +87,15 @@ describe("Name parser parsePerson", function() {
         expect(robert.parsed["NameExpansion"]).toEqual("Robert Lewis");
         expect(neville.parsed["NameExpansion"]).toEqual("William A.");
     });
+});
 
 
 
-    // first, last
-    // last, first
-    //
-    // it("Can parse Chief Black Foot", function() {
+describe("Name parser guessPerson", function() {
+    parser = new NameParser()
+
+    // TODO:
+    // it("Can parse Chief Black Foot with Spirit ", function() {
     //     var parser = parser.parsePerson("Black Foot, Chief, -1877 (Spirit)");
     //     parser.parsePerson();
     //     // console.log(parser)
@@ -111,6 +112,7 @@ describe("Name parser parsePerson", function() {
 
     it("Can parse a name with just a forename", function() {
         var name = parser.parsePerson("James 1444-1501")
+        expect(name.parsed["Forename"]).toEqual("James")
         expect(name.parsed["Date"]).toEqual("1444-1501")
     });
 
@@ -118,7 +120,7 @@ describe("Name parser parsePerson", function() {
         var guesses = parser.guessPerson("Smith James") // => Smith, James
         expect(guesses[1]["Surname"]).toEqual("Smith")
         expect(guesses[1]["Forename"]).toEqual("James")
-        expect(guesses[2]["Surname"]).toEqual("James")
+        expect(guesses[2]["Surname"]).toEqual("James")  // guesses both in case order doesn't match RDA
         expect(guesses[2]["Forename"]).toEqual("Smith")
 
     });

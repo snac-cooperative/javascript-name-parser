@@ -1,6 +1,6 @@
 {
   "name": "javascript-name-parser",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "SNAC-Compatible Name Parser in Javascript",
   "main": "name-parser.js",
   "scripts": {
@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/glassjoseph/javascript-name-parser.git"
+    "url": "git+https://github.com/snac-cooperative/javascript-name-parser.git"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "BSD-3",
   "bugs": {
-    "url": "https://github.com/glassjoseph/javascript-name-parser/issues"
+    "url": "https://github.com/snac-cooperative/javascript-name-parser/issues"
   },
-  "homepage": "https://github.com/glassjoseph/javascript-name-parser#readme",
+  "homepage": "https://github.com/snac-cooperative/javascript-name-parser#readme",
   "devDependencies": {
     "jasmine": "^3.1.0"
   }

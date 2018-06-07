@@ -37,9 +37,11 @@ NameParser.prototype.guessPerson = function(name) {
     // Guess Surname and Forename
     if (!name.parsed["Surname"] && name.parsed["Forename"].match(/ /)) {
         var newClone = Object.assign({}, clonedParse)
-        var forenameWithSpace = newClone["Forename"].split(/ (.+)/);
-        newClone["Surname"] = forenameWithSpace[0];
-        newClone["Forename"] = forenameWithSpace[1];
+        var forenameWithSpace = newClone["Forename"]
+
+        lastSpace = forenameWithSpace.lastIndexOf(' ')
+        newClone["Surname"] = forenameWithSpace.slice(0, lastSpace).trim()
+        newClone["Forename"] = forenameWithSpace.slice(lastSpace).trim()
 
         flippedNames = Object.assign({}, newClone)
         flippedNames["Surname"] = newClone["Forename"]

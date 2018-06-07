@@ -7,6 +7,7 @@ SNAC-Compatible Name Parser in Javascript. Designed to parse RDA formatted names
 
 ### Print names
 `cat data/names.txt | ./run-names.sh`
+`echo "Shakespeare, William, 1564-1616" | ./run-names.sh`
 
 ### Usage
 To use, instantiate the parser and call `parsePerson('Full Name')` or, for multiple possible parsings, `guessPerson('Full Name')`.

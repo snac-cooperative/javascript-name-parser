@@ -124,4 +124,14 @@ describe("Name parser guessPerson", function() {
         expect(guesses[2]["Forename"]).toEqual("Smith")
 
     });
+
+    it("can guess forename and surename when not split by comma", function() {
+        var guesses = parser.guessPerson("James H. Smith") // => Smith, James H.
+        expect(guesses[1]["Surname"]).toEqual("James H.")
+        expect(guesses[1]["Forename"]).toEqual("Smith")
+        expect(guesses[2]["Surname"]).toEqual("Smith")  // guesses both in case order doesn't match RDA
+        expect(guesses[2]["Forename"]).toEqual("James H.")
+        console.log(guesses)
+
+    });
 });
